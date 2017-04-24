@@ -10,7 +10,7 @@ import java.util.Map;
  * @author Monsterray
  *
  */
-public class Drink {
+public class Drink implements Comparable{
 	
 	private List<String> folders;
 	
@@ -166,5 +166,10 @@ public class Drink {
 	 */
 	public void setNutritionData(Map<String, String> nutritionData) {
 		this.nutritionData = nutritionData;
+	}
+
+	@Override
+	public int compareTo(Object o) {
+		return this.drinkTitle.compareTo(((Drink)o).drinkTitle);
 	}
 }
