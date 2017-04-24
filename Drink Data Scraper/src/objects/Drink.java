@@ -3,8 +3,6 @@
  */
 package objects;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -14,7 +12,7 @@ import java.util.Map;
  */
 public class Drink {
 	
-	private List<String> folders = new ArrayList<String>();
+	private List<String> folders;
 	
 	private String drinkTitle;
 
@@ -28,7 +26,7 @@ public class Drink {
 
 	private Map<String, String> ingredients;
 
-	private HashMap<String, String> nutritionData;
+	private Map<String, String> nutritionData;
 	
 	public Drink(){
 		
@@ -47,7 +45,7 @@ public class Drink {
 	public Drink(List<String> folders, String drinkTitle, String glassType,
 			String alcoholPercent, Map<String, String> ingredients,
 			String instructions, String servingSize,
-			HashMap<String, String> nutritionData) {
+			Map<String, String> nutritionData) {
 		this.folders = folders;
 		this.drinkTitle = drinkTitle;
 		this.glassType = glassType;
@@ -159,14 +157,14 @@ public class Drink {
 	/**
 	 * @return the nutritionData
 	 */
-	public HashMap<String, String> getNutritionData() {
+	public Map<String, String> getNutritionData() {
 		return nutritionData;
 	}
 
 	/**
 	 * @param nutritionData the nutritionData to set
 	 */
-	public void setNutritionData(HashMap<String, String> nutritionData) {
+	public void setNutritionData(Map<String, String> nutritionData) {
 		this.nutritionData = nutritionData;
 	}
 }
