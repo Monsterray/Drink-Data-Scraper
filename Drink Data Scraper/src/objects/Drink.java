@@ -10,7 +10,7 @@ import java.util.Map;
  * @author Monsterray
  *
  */
-public class Drink implements Comparable{
+public class Drink implements Comparable<Drink>{
 	
 	private List<String> folders;
 	
@@ -169,7 +169,7 @@ public class Drink implements Comparable{
 	}
 
 	@Override
-	public int compareTo(Object o) {
-		return this.drinkTitle.compareTo(((Drink)o).drinkTitle);
+	public int compareTo(Drink d) {
+		return this.drinkTitle.compareTo(d.drinkTitle);
 	}
 }
