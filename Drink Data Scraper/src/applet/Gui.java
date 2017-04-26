@@ -9,6 +9,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Toolkit;
 import java.awt.event.ContainerEvent;
 import java.awt.event.ContainerListener;
@@ -28,13 +29,13 @@ import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
-import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.JTextField;
+
+import master.DrinkDatabase;
 
 /**
  * @author Monsterray
@@ -46,17 +47,17 @@ public class Gui extends Applet {
 	 * 
 	 */
 	private static final long serialVersionUID = -4027746924189020457L;
-	private AppletListener listen = new AppletListener();
+	private AppletListener listen = new AppletListener(this);
 	private boolean drawTabs;
-	private boolean drawToolbar;
-	
-	private JTabbedPane tab;
-	private JFrame frame;
+	private JTabbedPane tabPanel;
+	private JFrame mainFrame;
 	private String frameTitle;
-	private JPanel gamePanel;
 	private JTextArea textArea;
+	private JTextArea messagesArea;
 	private JMenuBar topMenuBar;
-	private ImageIcon gameIcon = createImageIcon("images/command.gif");
+	private JScrollPane scrollArea;
+	JTextField searchField;
+	private ImageIcon searchIcon = createImageIcon("images/command.gif");
 	private ImageIcon aboutIcon = createImageIcon("images/about.png");
 	
 	private Dimension appletDimensions = new Dimension(765, 503);
@@ -64,17 +65,22 @@ public class Gui extends Applet {
 	private Dimension screenSize;
 	private int screenWidth;
 	private int screenHeight;
+	@SuppressWarnings("unused")
 	private int dialogSelectionType;
+	
+	@SuppressWarnings("unused")
+	private DrinkDatabase drinkData;
 	
 	
 	/**
 	 * @param args
 	 */
 	public Gui(String[] args){
+//		System.out.println(System.getProperty("java.class.path"));
 		List<String> argList = Arrays.asList(args);
-		System.out.println("GUI initilizer called");
-		drawToolbar = argList.contains("-toolbar") || argList.contains("-both");
+		System.out.println("[INFO] Gui called");
 		drawTabs = argList.contains("-tabbed") || argList.contains("-both");
+		System.out.println("[INFO] Drawing tabs: " + drawTabs);
 //		try {
 //			UIManager.setLookAndFeel("org.jvnet.substance.skin.SubstanceEmeraldDuskLookAndFeel");
 //		} catch (ClassNotFoundException e1) {
@@ -87,9 +93,6 @@ public class Gui extends Applet {
 //			e1.printStackTrace();
 //		}
 		try {
-			tab = new JTabbedPane();
-			frame = new JFrame(frameTitle);
-			setCornerIcon("assets/images/advisor 0.png");
 			initUI();
 		} catch (Exception e) {
 			System.out.println("FAIL: " + e.toString());
@@ -101,87 +104,83 @@ public class Gui extends Applet {
 	 * 
 	 */
 	private void initUI() {
-		System.out.println("GUI.initUI called");
-		try {
-			// signlink.mainapp
-			JFrame.setDefaultLookAndFeelDecorated(true);
-			JDialog.setDefaultLookAndFeelDecorated(true);
-			JPopupMenu.setDefaultLightWeightPopupEnabled(false);
+		System.out.println("[INFO] Initializing...");
+		tabPanel = new JTabbedPane();
+		mainFrame = new JFrame(frameTitle);
+		setCornerIcon("assets/images/advisor 0.png");
+		
+		JFrame.setDefaultLookAndFeelDecorated(true);
+		JDialog.setDefaultLookAndFeelDecorated(true);
+		JPopupMenu.setDefaultLightWeightPopupEnabled(false);
+		tabPanel.putClientProperty("substancelaf.tabbedpanehasclosebuttons", true);
 
-			frame.setLayout(new BorderLayout());
-			frame.setResizable(false);
-			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-			//showSplash();
-			frame.getContentPane().removeAll();
+		mainFrame.setLayout(new BorderLayout());
+		mainFrame.setResizable(true);
+		mainFrame.setPreferredSize(appletDimensions);
+		mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		mainFrame.getContentPane().removeAll();
+		centerWindow();
+		
 
-			gamePanel = new JPanel();
-			gamePanel.setLayout(new BorderLayout());
-			gamePanel.add(this);
-			gamePanel.setPreferredSize(appletDimensions);
-			centerWindow();
-
-			/*
-			 * try{ editorPane = new
-			 * JEditorPane("http://www.liberty.issaquah.wednet.edu/");
-			 * }catch(Exception e){
-			 * 
-			 * }
-			 */
-			textArea.setBackground(new Color(166, 166, 166));
-			textArea = readTabInfo("../Version.txt", textArea);
-			// aboutArea = readTabInfo("./cba.txt", aboutArea);
-			// licenceArea = readTabInfo("./asd.txt", licenceArea);
-
-			JScrollPane scrollText = new JScrollPane(textArea);
-			// JScrollPane webscroll = new JScrollPane(editorPane);
-			// JScrollPane Aboutscroll = new JScrollPane(aboutArea);
-			// JScrollPane Licencescroll = new JScrollPane(licenceArea);
-			textArea = new JTextArea();
-			// aboutArea = new JTextArea();
-			// licenceArea = new JTextArea();
-
-			tab = new JTabbedPane();
-			tab.putClientProperty("substancelaf.tabbedpanehasclosebuttons", true);
-
-			if (drawToolbar) {
-				topMenuBar = new JMenuBar();
-				topMenuBar = addMenuBar(topMenuBar);
-				frame.getContentPane().add(topMenuBar, BorderLayout.NORTH);
-
-			}
-			frame.getContentPane().add(gamePanel, BorderLayout.CENTER);
-			if (drawTabs) {
-				frame.getContentPane().add(tab, BorderLayout.CENTER);
-				tab.addTab("Game", gameIcon, gamePanel, "Your Game Panel");
-				tab.setMnemonicAt(0, 49);
-				tab.addTab("Version info", aboutIcon, scrollText, "Version Info");
-				// tab.addTab("About Us", about2, aboutArea, "About us");
-				// tab.addTab("License agreement", lice, licenceArea, "License");
-				// tab.addTab("webscroll", lice, webscroll, "webscroll");
-				// tab.addTab("Aboutscroll", lice, Aboutscroll, "Aboutscroll");
-				// tab.addTab("Licencescroll", lice, Licencescroll, "Licencescroll");
-			}
-
-			frame.setVisible(true);
-			frame.setResizable(false);
-			frame.pack();
-			frame.getContentPane().addContainerListener(
-					new ContainerListener() {
-						@Override
-						public void componentAdded(ContainerEvent e) {
-							frame.pack();
-						}
-
-						@Override
-						public void componentRemoved(ContainerEvent e) {
-							frame.pack();
-						}
-					});
-
-			init();
-		} catch (Exception e) {
-			e.printStackTrace();
+		messagesArea = new JTextArea(20, 30);
+		messagesArea.setFont(new Font("Arial Bold", 0, 14));
+		messagesArea.setRows(7);
+		messagesArea.setForeground(new Color(100, 100, 255));
+		messagesArea.setBackground(new Color(0, 0, 0));
+		
+		scrollArea = new JScrollPane(this.messagesArea, 22, 31);
+		scrollArea.setPreferredSize(new Dimension(750, 450));
+		scrollArea.setVerticalScrollBarPolicy(22);
+		scrollArea.setHorizontalScrollBarPolicy(32);
+		
+		
+		textArea = new JTextArea();
+		textArea.setBackground(new Color(166, 166, 166));
+		textArea = readTabInfo("../Version.txt", textArea);
+		JScrollPane scrollTextArea = new JScrollPane(textArea);
+		
+		topMenuBar = addMenuBar(new JMenuBar());	// Leaving it this way so I can change the toolbar later in the program
+		mainFrame.getContentPane().add(topMenuBar, BorderLayout.NORTH);
+		
+		if (drawTabs) {
+			mainFrame.getContentPane().add(tabPanel, BorderLayout.CENTER);
+			
+			tabPanel.addTab("Search", searchIcon, scrollArea, "Search results go here");
+			tabPanel.addTab("Version info", aboutIcon, scrollTextArea, "Version Info");
+			
+//			tabPanel.setMnemonicAt(0, 49);
+		}else{
+			mainFrame.getContentPane().add(scrollArea, BorderLayout.CENTER);
 		}
+
+		mainFrame.pack();
+		mainFrame.setVisible(true);
+		mainFrame.getContentPane().addContainerListener(
+				new ContainerListener() {
+					@Override
+					public void componentAdded(ContainerEvent e) {
+						mainFrame.pack();
+					}
+
+					@Override
+					public void componentRemoved(ContainerEvent e) {
+						mainFrame.pack();
+					}
+				});
+
+//		init();
+	}
+
+	public void readData(){
+		drinkData = new DrinkDatabase("../Data Drinks/");
+	}
+
+	/**
+	 * Used to find search results with the line taken in form the search field
+	 */
+	public void findSearchResults() {
+		String searchRegex = searchField.getText();
+		System.out.println(searchRegex + " Was in the searchField");
 	}
 
 	/**
@@ -192,7 +191,7 @@ public class Gui extends Applet {
 		screenSize = toolkit.getScreenSize();
 		screenWidth = (int) screenSize.getWidth();
 		screenHeight = (int) screenSize.getHeight();
-		frame.setLocation((screenWidth - (int) appletDimensions.getWidth()) / 2, (screenHeight - (int) appletDimensions.getHeight()) / 2);
+		mainFrame.setLocation((screenWidth - (int) appletDimensions.getWidth()) / 2, (screenHeight - (int) appletDimensions.getHeight()) / 2);
 	}
 
 	/**
@@ -200,20 +199,17 @@ public class Gui extends Applet {
 	 * @return
 	 */
 	private JMenuBar addMenuBar(JMenuBar menuBar) {
-		menuBar.add(createButtonTab("File", new String[] { "Open File",
+		menuBar.add(createButtonTab("File", new String[] { "Change Path",
 				"Save Screenshot", "-", "Vote", "Donate", "Forums", "-",
 				"Item List", "World Map", "Object IDs", "-", "Exit" }));
- 		menuBar.add(createButtonTab("Test", new String[] {"Display Classes"}));
-//		menuBar.add(createButtonTab("Themes", new String[] { "Blue", "Black/White", "Green", "Red", "White", "Grey", "Dark Grey" }));
+ 		menuBar.add(createButtonTab("Testing", new String[] {"Display Classes"}));
 //		menuBar.add(createButtonTab("Themes", getThemes("./theme/Theme.jar", "org.jvnet.substance.skin")));
-		menuBar.add(createButtonTab("Cursor", new String[] { "Scimitar",
-				"Longsword", "Twohander", "Halberd", "Warspear", "Godsword",
-				"Granite Maul", "Sword", "Original", "Guitar", "Kenny",
-				"Pikachu", "Normal Pointer", "Wand" }));
 		menuBar.add(createButton("Screenshot", "Screenshot"));
-		menuBar.add(createButton("Full Screen", "fullScreen"));
-		menuBar.add(createButton("Test Function", "Debug"));
 		menuBar.add(createButton("||>", "pause"));
+		menuBar.add(createButton(" Search ", "searchGo"));
+		searchField = new JTextField();
+//		searchField.setPreferredSize(new Dimension(500, 15));
+		menuBar.add(searchField);
 		return menuBar;
 	}
 
@@ -261,7 +257,7 @@ public class Gui extends Applet {
 	 * @return
 	 */
 	public JDialog createDialog(Component comp, String title, Container container) {
-		JDialog jdialog = new JDialog(frame, title, true);
+		JDialog jdialog = new JDialog(mainFrame, title, true);
 		jdialog.setDefaultCloseOperation(2);
 		jdialog.add(comp);
 		jdialog.pack();
@@ -324,7 +320,7 @@ public class Gui extends Applet {
 	public void setCornerIcon(String path) {
 		try {
 			if ((new File(path)).isFile()) {
-				frame.setIconImage(Toolkit.getDefaultToolkit().getImage(path));
+				mainFrame.setIconImage(Toolkit.getDefaultToolkit().getImage(path));
 			} else {
 				System.out.println("Can't Find the icon at: " + path);
 			}

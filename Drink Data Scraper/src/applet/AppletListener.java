@@ -17,17 +17,45 @@ import java.awt.event.WindowListener;
 public class AppletListener implements ActionListener, MouseListener,
 		MouseMotionListener, KeyListener, FocusListener, WindowListener,
 		MouseWheelListener {
+	
+	private Gui instance;
 
-	public AppletListener() {
-		// TODO Auto-generated constructor stub
+	public AppletListener(Gui inst) {
+		instance = inst;
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		// TODO Auto-generated method stub
+		String cmd = e.getActionCommand();
+		System.out.println("Command: " + cmd);
+	    int modifiers = e.getModifiers();
+	    System.out.println("\tALT : "  + checkMod(modifiers, ActionEvent.ALT_MASK));
+	    System.out.println("\tCTRL : " + checkMod(modifiers, ActionEvent.CTRL_MASK));
+	    System.out.println("\tMETA : " + checkMod(modifiers, ActionEvent.META_MASK));
+	    System.out.println("\tSHIFT: " + checkMod(modifiers, ActionEvent.SHIFT_MASK));
 
+	    switch(cmd){
+	    
+	    case("searchGo"):
+	    	instance.findSearchResults();
+	    	break;
+	    
+	    case("pause"):
+	    	instance.readData();
+	    	break;
+	    	
+	    case("Exit"):
+	    	System.exit(0);
+	    }
+//		4 = just right click
+//		8 = just middle click
+//		16 = just left click
 	}
 
+	private boolean checkMod(int modifiers, int mask) {
+	    return ((modifiers & mask) == mask);
+	}
+	
 	@Override
 	public void mouseWheelMoved(MouseWheelEvent e) {
 		// TODO Auto-generated method stub
