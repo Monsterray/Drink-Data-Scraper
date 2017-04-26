@@ -14,6 +14,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+
+import applet.Gui;
 
 /**
  * @author Monsterray
@@ -93,6 +96,43 @@ public class DrinkDatabase {
 					ingreds, sections[3], nutrition[0], nutrits));
 		}
 		in.close();
+	}
+
+	/**
+	 * Used to find search results with the line taken in form the search field
+	 */
+	public void findSearchResults(String searchRegex, Gui Gui) {
+		if(searchRegex.equals("") || searchRegex == null){
+			return;
+		}
+		List<String> multiSearch = new ArrayList<String>();
+		if(searchRegex.contains(",")){
+			multiSearch = Arrays.asList(searchRegex.split(","));
+		}else{
+			multiSearch.add(searchRegex);
+		}
+		int originSize = multiSearch.size();
+		
+		Gui.drinksToDisplay = new ArrayList<Drink>();
+		for(Drink d : allDrinks){
+			Map<String, String> ingreds = d.getIngredients();
+			int regexIn = 0;
+			List<String> tempStrs = new ArrayList<String>();
+			tempStrs.addAll(multiSearch);
+			for(Entry<String, String> e : ingreds.entrySet()){
+				for(String s : tempStrs){
+					if(e.getKey().toLowerCase().contains(s.toLowerCase())){
+						tempStrs.remove(s);
+						regexIn++;
+						break;
+					}
+				}
+				if(regexIn == originSize){
+					Gui.drinksToDisplay.add(d);
+					break;
+				}
+			}
+		}
 	}
 }
 

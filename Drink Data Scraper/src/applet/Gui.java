@@ -10,16 +10,23 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.Robot;
 import java.awt.Toolkit;
 import java.awt.event.ContainerEvent;
 import java.awt.event.ContainerListener;
+import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
+import java.util.Map.Entry;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -29,12 +36,14 @@ import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
+import objects.Drink;
 import objects.DrinkDatabase;
 
 /**
@@ -42,34 +51,27 @@ import objects.DrinkDatabase;
  *
  */
 public class Gui extends Applet {
-
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -4027746924189020457L;
-	private AppletListener listen = new AppletListener(this);
+	
 	private boolean drawTabs;
+	private final static String VERSION = "0.0.14";
+	
+	private AppletListener listen = new AppletListener(this);
+	private Dimension appletDimensions = new Dimension(765, 503);
+	JFrame mainFrame;
 	private JTabbedPane tabPanel;
-	private JFrame mainFrame;
-	private String frameTitle;
-	private JTextArea textArea;
-	private JTextArea messagesArea;
 	private JMenuBar topMenuBar;
+	private JTextArea versionTextArea;
+	private JTextArea messagesArea;
 	private JScrollPane scrollArea;
 	JTextField searchField;
-	private ImageIcon searchIcon = createImageIcon("images/command.gif");
-	private ImageIcon aboutIcon = createImageIcon("images/about.png");
 	
-	private Dimension appletDimensions = new Dimension(765, 503);
 	private Toolkit toolkit;
-	private Dimension screenSize;
-	private int screenWidth;
-	private int screenHeight;
-	@SuppressWarnings("unused")
-	private int dialogSelectionType;
-	
-	@SuppressWarnings("unused")
-	private DrinkDatabase drinkData;
+	JFileChooser fileChooser;
+	JDialog fileDialog;
+
+	DrinkDatabase drinkData;
+	public List<Drink> drinksToDisplay;
 	
 	
 	/**
@@ -105,8 +107,10 @@ public class Gui extends Applet {
 	 */
 	private void initUI() {
 		System.out.println("[INFO] Initializing...");
+		
+		System.out.println("[INFO] Initializing applet components...");
 		tabPanel = new JTabbedPane();
-		mainFrame = new JFrame(frameTitle);
+		mainFrame = new JFrame("Drink Search V" + VERSION);
 		setCornerIcon("assets/images/advisor 0.png");
 		
 		JFrame.setDefaultLookAndFeelDecorated(true);
@@ -127,26 +131,33 @@ public class Gui extends Applet {
 		messagesArea.setRows(7);
 		messagesArea.setForeground(new Color(100, 100, 255));
 		messagesArea.setBackground(new Color(0, 0, 0));
+		messagesArea.setLineWrap(true);
+		messagesArea.setWrapStyleWord(true);
+//		new JEditorPane();	TODO Change the text area to this so i can add hyperlinks and other HTML magic
 		
 		scrollArea = new JScrollPane(this.messagesArea, 22, 31);
 		scrollArea.setPreferredSize(new Dimension(750, 450));
 		scrollArea.setVerticalScrollBarPolicy(22);
 		scrollArea.setHorizontalScrollBarPolicy(32);
+
+		searchField = new JTextField();
+		searchField.setActionCommand("searchGo");
+		searchField.addActionListener(listen);
 		
 		
-		textArea = new JTextArea();
-		textArea.setBackground(new Color(166, 166, 166));
-		textArea = readTabInfo("../Version.txt", textArea);
-		JScrollPane scrollTextArea = new JScrollPane(textArea);
+		versionTextArea = new JTextArea();
+		versionTextArea.setBackground(new Color(166, 166, 166));
+		versionTextArea = readTabInfo("../Version.txt", versionTextArea);
+		JScrollPane scrollTextArea = new JScrollPane(versionTextArea);
 		
 		topMenuBar = addMenuBar(new JMenuBar());	// Leaving it this way so I can change the toolbar later in the program
 		mainFrame.getContentPane().add(topMenuBar, BorderLayout.NORTH);
 		
 		if (drawTabs) {
 			mainFrame.getContentPane().add(tabPanel, BorderLayout.CENTER);
-			
-			tabPanel.addTab("Search", searchIcon, scrollArea, "Search results go here");
-			tabPanel.addTab("Version info", aboutIcon, scrollTextArea, "Version Info");
+
+			tabPanel.addTab("Search", createImageIcon("images/command.gif"), scrollArea, "Search results go here");
+			tabPanel.addTab("Version info", createImageIcon("images/about.png"), scrollTextArea, "Version Info");
 			
 //			tabPanel.setMnemonicAt(0, 49);
 		}else{
@@ -172,6 +183,25 @@ public class Gui extends Applet {
 	}
 
 	/**
+	 * @param menuBar
+	 * @return
+	 */
+	private JMenuBar addMenuBar(JMenuBar menuBar) {
+		menuBar.add(createButtonTab("File", new String[] {	"Change Path", "Save Screenshot", "-", "Vote", "Donate", 
+															"Forums", "-", "Item List", "World Map", "Object IDs", 
+															"-", "Exit" }));
+ 		menuBar.add(createButtonTab("Testing", new String[] {"Display Classes", "Load Test"}));
+ 		menuBar.add(createButtonTab("Search Type", new String[] { "Contains Ingredients", "Has only Ingredients",
+																  "Contains Title", "Uses Glass"}));
+//		menuBar.add(createButtonTab("Themes", getThemes("./theme/Theme.jar", "org.jvnet.substance.skin")));
+		menuBar.add(createButton("Screenshot", "Screenshot"));
+		menuBar.add(createButton("||>", "pause"));
+		menuBar.add(createButton(" Search ", "searchGo"));
+		menuBar.add(searchField);
+		return menuBar;
+	}
+
+	/**
 	 * 
 	 */
 	public void readData(){
@@ -179,43 +209,42 @@ public class Gui extends Applet {
 	}
 
 	/**
-	 * Used to find search results with the line taken in form the search field
+	 * Used after findSearchResults(), displays all the drinks that were found with searched ingredient
+	 * TODO change this to be able to search for more than just one ingredient and be able to search by other things
 	 */
-	public void findSearchResults() {
-		String searchRegex = searchField.getText();
-		System.out.println(searchRegex + " Was in the searchField");
-		
+	public void addAndDisplayResults() {
+		messagesArea.setText("");
+		for(Drink d : drinksToDisplay){
+			messagesArea.append(d.getDrinkTitle() + "\n\n");
+			messagesArea.append(d.getGlassType() + "\n");
+			for(Entry<String, String> e : d.getIngredients().entrySet()){
+				messagesArea.append("\n" + e.getValue() + " - " + e.getKey());
+			}
+			messagesArea.append("\n\n" + d.getInstructions() + "\n\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n");
+			
+			scrollArea.getVerticalScrollBar().setValue(scrollArea.getVerticalScrollBar().getMaximum());
+			
+		}
 		
 	}
 
+	/**
+	 * @param message
+	 */
+	void addMessage(String message){
+		messagesArea.append(message + "\n");
+		scrollArea.getVerticalScrollBar().setValue(scrollArea.getVerticalScrollBar().getMaximum());
+	}
+	
 	/**
 	 * Centers the applet in the center of the center
 	 */
 	private void centerWindow() {
 		toolkit = Toolkit.getDefaultToolkit();
-		screenSize = toolkit.getScreenSize();
-		screenWidth = (int) screenSize.getWidth();
-		screenHeight = (int) screenSize.getHeight();
+		Dimension screenSize = toolkit.getScreenSize();
+		int screenWidth = (int) screenSize.getWidth();
+		int screenHeight = (int) screenSize.getHeight();
 		mainFrame.setLocation((screenWidth - (int) appletDimensions.getWidth()) / 2, (screenHeight - (int) appletDimensions.getHeight()) / 2);
-	}
-
-	/**
-	 * @param menuBar
-	 * @return
-	 */
-	private JMenuBar addMenuBar(JMenuBar menuBar) {
-		menuBar.add(createButtonTab("File", new String[] { "Change Path",
-				"Save Screenshot", "-", "Vote", "Donate", "Forums", "-",
-				"Item List", "World Map", "Object IDs", "-", "Exit" }));
- 		menuBar.add(createButtonTab("Testing", new String[] {"Display Classes"}));
-//		menuBar.add(createButtonTab("Themes", getThemes("./theme/Theme.jar", "org.jvnet.substance.skin")));
-		menuBar.add(createButton("Screenshot", "Screenshot"));
-		menuBar.add(createButton("||>", "pause"));
-		menuBar.add(createButton(" Search ", "searchGo"));
-		searchField = new JTextField();
-//		searchField.setPreferredSize(new Dimension(500, 15));
-		menuBar.add(searchField);
-		return menuBar;
 	}
 
 	/**
@@ -278,20 +307,58 @@ public class Gui extends Applet {
 	public JFileChooser createFileChooser(String defaultPath, int dialogType) {
 		JFileChooser fChooser;
 		try {
-			fChooser = new JFileChooser(); // creates a JFileChooser
-			fChooser.setFileSelectionMode(0); // either files(0) or folders(1)
-			fChooser.addChoosableFileFilter(new ImageFileFilter()); // sets the filter in the drop down menu bar for extension types
-			fChooser.setCurrentDirectory(new File(defaultPath)); // sets the directory the chooser begins in
-			String title = ((int) (Math.random() * 100)) + ".png"; // gets a random name for the file, will change this later
+			fChooser = new JFileChooser();
+			fChooser.setFileSelectionMode(0); // Either files(0) or folders(1)
+			fChooser.addChoosableFileFilter(new ImageFileFilter()); // Sets the filter in the drop down menu bar for extension types
+			fChooser.setCurrentDirectory(new File(defaultPath)); // Sets the directory the chooser begins in
+			
+			Date dNow = new Date( );
+			SimpleDateFormat ft = new SimpleDateFormat ("yyyy-MM-dd_hhmmss");
+			String title = ft.format(dNow) + ".png"; // Sets the title of the file to the current date and time
+			
 			fChooser.setSelectedFile(new File(title)); // sets the
-			fChooser.setDialogType(dialogType); // either opening(0) or saveing(1)
-			dialogSelectionType = dialogType; // sets my variable to tell if the user is loading or saveing
+			fChooser.setDialogType(dialogType); // either opening(0) or saving(1)
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.out.println("[Failed] to create FileChooser");
 			return null;
 		}
 		return fChooser;
+	}
+
+	/**
+	 * @param saveing
+	 * @param defaultPath
+	 * @param title
+	 * @return
+	 */
+	public void createFileWindow(int saveing, String defaultPath, String title) {
+		// ImageFileFilter filter = new ImageFileFilter();
+		fileChooser = createFileChooser(defaultPath, saveing);
+		fileChooser.addActionListener(listen);
+		fileDialog = createDialog(fileChooser, title, this);
+		fileDialog.setVisible(true);
+	}
+
+	/**
+	 * @param screenToCapture
+	 * @return
+	 */
+	public BufferedImage getFrameImage(Component screenToCapture) {
+		BufferedImage image;
+		try {
+			Robot robot = new Robot();
+			Point point = screenToCapture.getLocationOnScreen();
+			Rectangle rectangle = new Rectangle(point.x, point.y, screenToCapture.getWidth(), screenToCapture.getHeight());
+			image = robot.createScreenCapture(rectangle);
+		} catch (Throwable throwable) {
+			JOptionPane.showMessageDialog(mainFrame,
+					"An error occured while trying to create a screenshot!",
+					"Screenshot Error", 0);
+			return null;
+		}
+		return image;
 	}
 
 	/**
