@@ -35,7 +35,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
-import master.DrinkDatabase;
+import objects.DrinkDatabase;
 
 /**
  * @author Monsterray
@@ -171,6 +171,9 @@ public class Gui extends Applet {
 //		init();
 	}
 
+	/**
+	 * 
+	 */
 	public void readData(){
 		drinkData = new DrinkDatabase("../Data Drinks/");
 	}
@@ -181,6 +184,8 @@ public class Gui extends Applet {
 	public void findSearchResults() {
 		String searchRegex = searchField.getText();
 		System.out.println(searchRegex + " Was in the searchField");
+		
+		
 	}
 
 	/**
