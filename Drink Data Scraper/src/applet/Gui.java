@@ -72,6 +72,7 @@ public class Gui extends Applet {
 
 	DrinkDatabase drinkData;
 	public List<Drink> drinksToDisplay;
+	public String searchStyle;
 	
 	
 	/**
@@ -107,6 +108,7 @@ public class Gui extends Applet {
 	 */
 	private void initUI() {
 		System.out.println("[INFO] Initializing...");
+		searchStyle = "Contains Ingredients";
 		
 		System.out.println("[INFO] Initializing applet components...");
 		tabPanel = new JTabbedPane();

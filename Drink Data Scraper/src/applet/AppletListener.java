@@ -44,8 +44,20 @@ public class AppletListener implements ActionListener, MouseListener,
 
 	    switch(cmd){
 	    
+	    // Search type buttons
+	    case("Contains Ingredients"):
+	    case("Has only Ingredients"):
+	    case("Contains Title"):
+	    case("Uses Glass"):
+	    	instance.searchStyle = cmd;
+	    	break;
+	    
 	    case("searchGo"):
-	    	instance.drinkData.findSearchResults(instance.searchField.getText(), instance);
+	    	try {
+				instance.drinkData.findSearchResults(instance.searchField.getText(), instance);
+			} catch (NullPointerException npe) {
+				System.err.println("[ERROR] You must press the play button before searching!");
+			}
 	    	instance.addAndDisplayResults();
 	    	break;
 	    

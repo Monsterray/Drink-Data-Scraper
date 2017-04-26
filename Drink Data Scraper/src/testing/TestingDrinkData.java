@@ -84,9 +84,7 @@ public class TestingDrinkData {
 			}
 		  	Elements trailElements = drinkTrail.findEvery("<a href>");
 		  	for(Element e : trailElements){	// This is where I make and change the folder
-//		  		String folder = e.innerText().replace("&reg;", "\u00AE").replaceAll("*", "~").trim();
 		  		String folder = e.innerText().replace("&reg;", "\u00AE").trim();
-//		  		System.out.println(folder);
 		  		if(folder.equals("Tropical / fruity")){
 		  			folder = "Tropical or Fruity";
 		  		}else if(folder.equals("Creamy / milky")){
@@ -127,9 +125,6 @@ public class TestingDrinkData {
 			// Instructions Section
 			Element instructionsHTML = userAgent.doc.findFirst("<div class=\"RecipeDirections instructions\">"); //find first div who's class matches "RecipeDirections instructions"
 		  	instructions = instructionsHTML.innerText().trim().replaceAll("[\\t\\n\\r]+"," ").replaceAll(" +", " ");
-//			System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-//			System.out.println(instructions);
-//			System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 		  	
 		  	// Nutrition Section
 			try {
@@ -171,6 +166,8 @@ public class TestingDrinkData {
 			
 		  	FileWriter fileWriter = new FileWriter(fullPath + "/data.drink", true);
 			BufferedWriter w = new BufferedWriter(fileWriter);
+			
+			//TODO I should add the drink number for integration into an HTML project idea
 			
 			w.write(newLine);
 			w.write(title);

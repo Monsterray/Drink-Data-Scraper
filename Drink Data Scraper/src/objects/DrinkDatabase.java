@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import applet.Gui;
 
@@ -101,7 +102,7 @@ public class DrinkDatabase {
 	/**
 	 * Used to find search results with the line taken in form the search field
 	 */
-	public void findSearchResults(String searchRegex, Gui Gui) {
+	public void findSearchResults(String searchRegex, Gui gui) {
 		if(searchRegex.equals("") || searchRegex == null){
 			return;
 		}
@@ -113,26 +114,62 @@ public class DrinkDatabase {
 		}
 		int originSize = multiSearch.size();
 		
-		Gui.drinksToDisplay = new ArrayList<Drink>();
+		gui.drinksToDisplay = new ArrayList<Drink>();
 		for(Drink d : allDrinks){
-			Map<String, String> ingreds = d.getIngredients();
 			int regexIn = 0;
 			List<String> tempStrs = new ArrayList<String>();
 			tempStrs.addAll(multiSearch);
-			for(Entry<String, String> e : ingreds.entrySet()){
-				for(String s : tempStrs){
-					if(e.getKey().toLowerCase().contains(s.toLowerCase())){
-						tempStrs.remove(s);
-						regexIn++;
+			if(gui.searchStyle.equals("Contains Ingredients")){
+				Map<String, String> ingreds = d.getIngredients();
+				
+				for(Entry<String, String> e : ingreds.entrySet()){
+					for(String s : tempStrs){
+						if(e.getKey().toLowerCase().contains(s.toLowerCase())){
+							tempStrs.remove(s);
+							regexIn++;
+							break;
+						}
+					}
+					if(regexIn == originSize){
+						gui.drinksToDisplay.add(d);
 						break;
 					}
 				}
-				if(regexIn == originSize){
-					Gui.drinksToDisplay.add(d);
-					break;
+			}else if(gui.searchStyle.equals("Has only Ingredients")){	// Possibly make a way to add things that you would inherently have
+																		// ie. Ice, Water, etc..
+				Map<String, String> ingreds = d.getIngredients();
+				Set<Entry<String, String>> ingredsSet = ingreds.entrySet();
+
+				for(Entry<String, String> e : ingredsSet){
+					for(String s : tempStrs){
+						if(e.getKey().toLowerCase().contains(s.toLowerCase())){
+							tempStrs.remove(s);
+							regexIn++;
+							break;
+						}
+					}
+					if(regexIn == originSize && tempStrs.isEmpty()){
+						gui.drinksToDisplay.add(d);
+						break;
+					}
+				}
+			}else if(gui.searchStyle.equals("Contains Title")){
+				for(String s : tempStrs){
+					if(d.getDrinkTitle().toLowerCase().contains(s.toLowerCase())){
+						gui.drinksToDisplay.add(d);
+						break;
+					}
+				}
+			}else if(gui.searchStyle.equals("Uses Glass")){
+				for(String s : tempStrs){
+					if(d.getGlassType().toLowerCase().contains(s.toLowerCase())){
+						gui.drinksToDisplay.add(d);
+						break;
+					}
 				}
 			}
 		}
+		System.out.println("Found " + gui.drinksToDisplay.size() + " Drinks");
 	}
 }
 
