@@ -15,7 +15,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import applet.Gui;
 
@@ -104,6 +103,8 @@ public class DrinkDatabase {
 	 */
 	public void findSearchResults(String searchRegex, Gui gui) {
 		if(searchRegex.equals("") || searchRegex == null){
+			gui.drinksToDisplay = this.allDrinks;
+			System.out.println("Found " + gui.drinksToDisplay.size() + " Drinks");
 			return;
 		}
 		List<String> multiSearch = new ArrayList<String>();
@@ -137,21 +138,26 @@ public class DrinkDatabase {
 				}
 			}else if(gui.searchStyle.equals("Has only Ingredients")){	// Possibly make a way to add things that you would inherently have
 																		// ie. Ice, Water, etc..
+				boolean keep = true;
 				Map<String, String> ingreds = d.getIngredients();
-				Set<Entry<String, String>> ingredsSet = ingreds.entrySet();
-
-				for(Entry<String, String> e : ingredsSet){
+				
+				for(Entry<String, String> e : ingreds.entrySet()){
+					
 					for(String s : tempStrs){
+						
 						if(e.getKey().toLowerCase().contains(s.toLowerCase())){
-							tempStrs.remove(s);
-							regexIn++;
+							keep = true;
 							break;
+						}else{
+							keep = false;
 						}
 					}
-					if(regexIn == originSize && tempStrs.isEmpty()){
-						gui.drinksToDisplay.add(d);
+					if(!keep){
 						break;
 					}
+				}
+				if(keep){
+					gui.drinksToDisplay.add(d);
 				}
 			}else if(gui.searchStyle.equals("Contains Title")){
 				for(String s : tempStrs){

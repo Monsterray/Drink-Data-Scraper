@@ -34,6 +34,7 @@ public class AppletListener implements ActionListener, MouseListener,
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
+		System.out.println("\n\n");
 		String cmd = e.getActionCommand();
 		System.out.println("Command: " + cmd);
 	    int modifiers = e.getModifiers();
@@ -54,9 +55,11 @@ public class AppletListener implements ActionListener, MouseListener,
 	    
 	    case("searchGo"):
 	    	try {
+	    		System.out.println(instance.searchField.getText());
 				instance.drinkData.findSearchResults(instance.searchField.getText(), instance);
 			} catch (NullPointerException npe) {
 				System.err.println("[ERROR] You must press the play button before searching!");
+				break;
 			}
 	    	instance.addAndDisplayResults();
 	    	break;

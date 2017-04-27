@@ -23,6 +23,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -215,6 +216,11 @@ public class Gui extends Applet {
 	 * TODO change this to be able to search for more than just one ingredient and be able to search by other things
 	 */
 	public void addAndDisplayResults() {
+		long startTime = System.currentTimeMillis();
+		long currentTime = System.currentTimeMillis();
+		long secondTime = System.currentTimeMillis();
+		List<Long> tickTimes = new ArrayList<Long>();
+		
 		messagesArea.setText("");
 		for(Drink d : drinksToDisplay){
 			messagesArea.append(d.getDrinkTitle() + "\n\n");
@@ -225,9 +231,17 @@ public class Gui extends Applet {
 			messagesArea.append("\n\n" + d.getInstructions() + "\n\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n");
 			
 			scrollArea.getVerticalScrollBar().setValue(scrollArea.getVerticalScrollBar().getMaximum());
-			
+			currentTime = System.currentTimeMillis();
+			tickTimes.add(currentTime - secondTime);
+			secondTime = System.currentTimeMillis();
 		}
-		
+		float averageTick = 0f;
+		for(long l : tickTimes){
+			averageTick = averageTick + l;
+		}
+
+		System.out.println("On average tick rate on printing took " + averageTick/tickTimes.size() + "ms");
+		System.out.println("It took " + (currentTime - startTime)/1000 + "sec to add messages to the screen!");
 	}
 
 	/**
