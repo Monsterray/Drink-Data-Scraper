@@ -114,9 +114,32 @@ public class AppletListener implements ActionListener, MouseListener,
 
 	    case("Exit"):
 	    	System.exit(0);
+
+		default:
+			testForThemeButtons(cmd);
+			break;
 	    }
 	}
+	
+	/**
+	 * @param button
+	 */
+	private void testForThemeButtons(String button){
+		String themeLocation = "org.jvnet.substance.skin";
+		String[] themes = instance.getThemes(Gui.THEME_LOCATION, themeLocation);
+		for(int i = 0; i < themes.length; i++){
+			if(themes[i].equals(button)){
+				instance.changeTheme(themeLocation + ".Substance" + button.replace(" ", "") + "LookAndFeel");
+				return;
+			}
+		}
+	}
 
+	/**
+	 * @param modifiers
+	 * @param mask
+	 * @return
+	 */
 	private boolean checkMod(int modifiers, int mask) {
 	    return ((modifiers & mask) == mask);
 	}

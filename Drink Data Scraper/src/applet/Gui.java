@@ -14,11 +14,13 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Robot;
 import java.awt.Toolkit;
+import java.awt.Window;
 import java.awt.event.ContainerEvent;
 import java.awt.event.ContainerListener;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -27,7 +29,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map.Entry;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -43,6 +48,9 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 
 import objects.Drink;
 import objects.DrinkDatabase;
@@ -74,13 +82,14 @@ public class Gui extends Applet {
 	DrinkDatabase drinkData;
 	public List<Drink> drinksToDisplay;
 	public String searchStyle;
+	public final static String THEME_LOCATION = "../deps/Theme.jar";
 	
 	
 	/**
 	 * @param args
 	 */
 	public Gui(String[] args){
-//		System.out.println(System.getProperty("java.class.path"));
+		System.out.println(System.getProperty("java.class.path"));
 		List<String> argList = Arrays.asList(args);
 		System.out.println("[INFO] Gui called");
 		drawTabs = argList.contains("-tabbed") || argList.contains("-both");
@@ -196,7 +205,7 @@ public class Gui extends Applet {
  		menuBar.add(createButtonTab("Testing", new String[] {"Display Classes", "Load Test"}));
  		menuBar.add(createButtonTab("Search Type", new String[] { "Contains Ingredients", "Has only Ingredients",
 																  "Contains Title", "Uses Glass"}));
-//		menuBar.add(createButtonTab("Themes", getThemes("./theme/Theme.jar", "org.jvnet.substance.skin")));
+		menuBar.add(createButtonTab("Themes", getThemes(THEME_LOCATION, "org.jvnet.substance.skin")));
 		menuBar.add(createButton("Screenshot", "Screenshot"));
 		menuBar.add(createButton("||>", "pause"));
 		menuBar.add(createButton(" Search ", "searchGo"));
@@ -204,6 +213,81 @@ public class Gui extends Applet {
 		return menuBar;
 	}
 
+	/**
+	 * @param theme
+	 */
+	public void changeTheme(String theme){
+		try {
+			UIManager.setLookAndFeel(theme);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	    for(Window window : JFrame.getWindows()) {
+	        SwingUtilities.updateComponentTreeUI(window);
+	    }
+	}
+
+	/**
+	 * This method gets all of the themes in the jar file at path and in the package packagePre.
+	 * 
+	 * @param path This is the path to the jar file to be searched
+	 * @param packagePre This is the package you want class files to be listed from
+	 * @return <strong>classNames</strong> Contains all the class files in the package chosen
+	 * @throws IOException
+	 */
+	String[] getThemes(String path, String packagePre){
+		List<String> classes = null;
+		try {
+			classes = getClassInJar(path, packagePre);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		ListIterator<String> classIter = classes.listIterator();
+		while(classIter.hasNext()){
+			String currentS = classIter.next();
+			if(currentS.contains("LookAndFeel")){
+				String cleanedLAF = currentS
+						.substring(currentS.lastIndexOf(".") + 1, currentS.length())
+						.replace("Substance", "").replace("LookAndFeel", "").replaceAll("(.)([A-Z])", "$1 $2");
+				classIter.set(cleanedLAF);
+//				System.out.println(cleanedLAF);
+			}else{
+				classIter.remove();
+			}
+		}
+		
+		String[] result = new String[classes.size()];
+		int i = 0;
+		for(String s : classes){
+			result[i] = s;
+			i++;
+		}
+		return result;
+	}
+
+	/**
+	 * This method searches a jar file in the chosen package location for class file to be added to a List.
+	 * 
+	 * @param path This is the path to the jar file to be searched
+	 * @param packagePre This is the package you want class files to be listed from
+	 * @return <strong>classNames</strong> Contains all the class files in the package chosen
+	 * @throws IOException
+	 */
+	public List<String> getClassInJar(String path, String packagePre) throws IOException{
+		List<String> classNames = new ArrayList<String>();
+		ZipInputStream zip = new ZipInputStream(new FileInputStream(path));
+		for (ZipEntry entry = zip.getNextEntry(); entry != null; entry = zip.getNextEntry()) {
+		    if (!entry.isDirectory() && entry.getName().endsWith(".class") && !entry.getName().contains("$") && entry.getName().replace('/', '.').startsWith(packagePre)) {
+		        // This ZipEntry represents a class. Now, what class does it represent?
+		        String className = entry.getName().replace('/', '.'); // including ".class"
+		        classNames.add(className.substring(0, className.length() - ".class".length()));
+//		        System.out.println(className.substring(0, className.length() - ".class".length()));
+		    }
+		}
+		zip.close();
+		return classNames;
+	}
+	
 	/**
 	 * 
 	 */
