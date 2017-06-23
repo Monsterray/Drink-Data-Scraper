@@ -50,7 +50,6 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 
 import objects.Drink;
 import objects.DrinkDatabase;
@@ -63,7 +62,7 @@ public class Gui extends Applet {
 	private static final long serialVersionUID = -4027746924189020457L;
 	
 	private boolean drawTabs;
-	private final static String VERSION = "0.0.14";
+	private final static String VERSION = "0.0.15";
 	
 	private AppletListener listen = new AppletListener(this);
 	private Dimension appletDimensions = new Dimension(765, 503);
@@ -199,9 +198,7 @@ public class Gui extends Applet {
 	 * @return
 	 */
 	private JMenuBar addMenuBar(JMenuBar menuBar) {
-		menuBar.add(createButtonTab("File", new String[] {	"Change Path", "Save Screenshot", "-", "Vote", "Donate", 
-															"Forums", "-", "Item List", "World Map", "Object IDs", 
-															"-", "Exit" }));
+		menuBar.add(createButtonTab("File", new String[] {	"Change Path", "Save Screenshot","-", "Exit" }));
  		menuBar.add(createButtonTab("Testing", new String[] {"Display Classes", "Load Test"}));
  		menuBar.add(createButtonTab("Search Type", new String[] { "Contains Ingredients", "Has only Ingredients",
 																  "Contains Title", "Uses Glass"}));
